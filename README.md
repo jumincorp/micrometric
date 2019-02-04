@@ -1,2 +1,2 @@
 # micrometrics
-Tiny metrics exporter
+A tiny metrics exporter
