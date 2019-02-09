@@ -1,4 +1,4 @@
-package micrometrics
+package micrometric
 
 import (
 	"log"

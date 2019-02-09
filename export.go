@@ -1,4 +1,4 @@
-package micrometrics
+package micrometric
 
 type Metric struct {
 	Labels map[string]string
