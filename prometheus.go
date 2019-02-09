@@ -14,13 +14,13 @@ var (
 	formattedMetrics = make([]string, 0)
 )
 
-type PrometheusExporter struct {
+type prometheusExporter struct {
 	Exporter
 	address string
 }
 
 func NewPrometheusExporter(address string) Exporter {
-	p := new(PrometheusExporter)
+	p := new(prometheusExporter)
 	p.address = address
 	return p
 }
@@ -36,7 +36,7 @@ func httpHandler() http.HandlerFunc {
 	}
 }
 
-func (p *PrometheusExporter) Setup() {
+func (p *prometheusExporter) Setup() {
 	http.Handle("/metrics", httpHandler())
 	log.Fatal(http.ListenAndServe(p.address, nil))
 }
@@ -73,7 +73,7 @@ func formatMetric(m Metric) string {
 	return sb.String()
 }
 
-func (p *PrometheusExporter) Export(metrics []Metric) error {
+func (p *prometheusExporter) Export(metrics []Metric) error {
 	var err error
 
 	mutex.Lock()
