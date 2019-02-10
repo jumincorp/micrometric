@@ -1,17 +1,17 @@
 package micrometric
 
 import (
+	"bytes"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
-	"strings"
 	"sync"
 )
 
 var (
 	mutex            = &sync.Mutex{}
-	formattedMetrics = make([]string, 0)
+	formattedMetrics = make([][]byte, 0)
 )
 
 type prometheusExporter struct {
@@ -41,10 +41,10 @@ func (p *prometheusExporter) Setup() {
 	log.Fatal(http.ListenAndServe(p.address, nil))
 }
 
-func formatMetric(m Metric) string {
-	var sb strings.Builder
+func formatMetric(m Metric) []byte {
+	bb := bytes.Buffer{}
 
-	sb.WriteString(m.Name)
+	bb.WriteString(m.Name)
 
 	sortedLabels := make([]string, len(m.Labels))
 	i := 0
@@ -54,23 +54,23 @@ func formatMetric(m Metric) string {
 	}
 	sort.Strings(sortedLabels)
 
-	sb.WriteRune('{')
+	bb.WriteRune('{')
 	for i := range sortedLabels {
 		if i != 0 {
-			sb.WriteRune(',')
+			bb.WriteRune(',')
 		}
-		sb.WriteString(sortedLabels[i])
-		sb.WriteString("=\"")
-		sb.WriteString(m.Labels[sortedLabels[i]])
-		sb.WriteRune('"')
+		bb.WriteString(sortedLabels[i])
+		bb.WriteString("=\"")
+		bb.WriteString(m.Labels[sortedLabels[i]])
+		bb.WriteRune('"')
 	}
-	sb.WriteString("} ")
+	bb.WriteString("} ")
 
-	sb.WriteString(strconv.FormatFloat(m.Value, 'f', -1, 64))
+	bb.WriteString(strconv.FormatFloat(m.Value, 'f', -1, 64))
 
-	sb.WriteRune('\n')
+	bb.WriteRune('\n')
 
-	return sb.String()
+	return bb.Bytes()
 }
 
 func (p *prometheusExporter) Export(metrics []Metric) error {
@@ -79,7 +79,7 @@ func (p *prometheusExporter) Export(metrics []Metric) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	formattedMetrics = make([]string, len(metrics))
+	formattedMetrics = make([][]byte, len(metrics))
 
 	for i, m := range metrics {
 		//formattedLabels := formatLabels(m.labels)
