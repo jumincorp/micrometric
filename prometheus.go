@@ -2,7 +2,6 @@ package micrometric
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -19,6 +18,7 @@ type prometheusExporter struct {
 	address string
 }
 
+// NewPrometheusExporter creates a new exporter configured for output to Prometheus.
 func NewPrometheusExporter(address string) Exporter {
 	p := new(prometheusExporter)
 	p.address = address
@@ -36,9 +36,9 @@ func httpHandler() http.HandlerFunc {
 	}
 }
 
-func (p *prometheusExporter) Setup() {
+func (p *prometheusExporter) Serve() error {
 	http.Handle("/metrics", httpHandler())
-	log.Fatal(http.ListenAndServe(p.address, nil))
+	return http.ListenAndServe(p.address, nil)
 }
 
 func formatMetric(m Metric) []byte {
@@ -74,16 +74,13 @@ func formatMetric(m Metric) []byte {
 }
 
 func (p *prometheusExporter) Export(metrics []Metric) error {
-	var err error
-
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	formattedMetrics = make([][]byte, len(metrics))
 
 	for i, m := range metrics {
-		//formattedLabels := formatLabels(m.labels)
 		formattedMetrics[i] = formatMetric(m)
 	}
-	return err
+	return nil
 }
